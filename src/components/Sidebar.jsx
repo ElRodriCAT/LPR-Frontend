@@ -55,27 +55,28 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside
+      // 🎯 Transición suave del ancho (500ms con easing personalizado)
+      // Cambio de ease-in-out a ease-out para inicio más fluido
       className={`${
         collapsed ? "w-16" : "w-64"
-      } h-screen bg-lpr-800 border-r border-lpr-700 flex flex-col transition-all duration-300 ease-in-out`}
+      } h-screen bg-lpr-800 border-r border-lpr-700 flex flex-col transition-all duration-500 ease-out shadow-xl`}
     >
-      {/* Logo / Header */}
+      {/* Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-lpr-700">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent-green to-accent-cyan rounded-lg flex items-center justify-center">
-              <span className="text-lpr-900 font-bold text-sm">LP</span>
-            </div>
-            <span className="font-semibold text-lg">LPR System</span>
-          </div>
+          <span className="font-semibold text-lg transition-colors duration-200 animate-slideInRight">
+            LPR System
+          </span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-2 hover:bg-lpr-700 rounded-lg transition-colors"
+          // 🎯 Microinteracción: scale ligero + rotación + color
+          className="p-2 hover:bg-lpr-700 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
           title={collapsed ? "Expandir" : "Colapsar"}
         >
           <svg
-            className={`w-5 h-5 transition-transform ${collapsed ? "rotate-180" : ""}`}
+            // 🎯 Rotación suave del ícono (aumentada a 500ms para sincronizar con sidebar)
+            className={`w-5 h-5 transition-transform duration-500 ${collapsed ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -92,30 +93,44 @@ export default function Sidebar({ collapsed, setCollapsed }) {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              // 🎯 Transiciones mejoradas:
+              // - duration-300: transición estándar para cambios de estado
+              // - hover:scale-[1.02]: microescalado sutil
+              // - hover:shadow-md: sombra al hover
+              // - border-l-2: indicador visual del item activo con animación
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
                 isActive
-                  ? "bg-accent-green/20 text-accent-green border-l-2 border-accent-green"
-                  : "text-gray-400 hover:bg-lpr-700 hover:text-white"
+                  ? "bg-accent-green/20 text-accent-green border-l-2 border-accent-green shadow-md shadow-accent-green/10"
+                  : "text-gray-400 hover:bg-lpr-700 hover:text-white hover:scale-[1.02] hover:shadow-md"
               } ${collapsed ? "justify-center" : ""}`
             }
             title={collapsed ? item.name : undefined}
           >
-            {item.icon}
-            {!collapsed && <span className="font-medium">{item.name}</span>}
+            {/* 🎯 Ícono con transición de color y escala */}
+            <span className="transition-transform duration-200 group-hover:scale-110">
+              {item.icon}
+            </span>
+            {/* 🎯 Texto con fade cuando sidebar se expande */}
+            {!collapsed && (
+              <span className="font-medium transition-all duration-300 animate-slideInRight">
+                {item.name}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
 
       {/* System Status */}
       <div className="p-4 border-t border-lpr-700">
-        <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : ""}`}>
+        <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : ""} transition-all duration-300`}>
           <div
-            className={`w-2.5 h-2.5 rounded-full ${
-              systemOnline ? "bg-accent-green animate-pulse" : "bg-red-500"
+            // 🎯 Pulso suave para indicador de estado online
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+              systemOnline ? "bg-accent-green animate-pulse shadow-lg shadow-accent-green/50" : "bg-red-500 animate-pulse shadow-lg shadow-red-500/50"
             }`}
           />
           {!collapsed && (
-            <span className={`text-sm ${systemOnline ? "text-accent-green" : "text-red-400"}`}>
+            <span className={`text-sm transition-colors duration-300 animate-slideInRight ${systemOnline ? "text-accent-green" : "text-red-400"}`}>
               {systemOnline ? "Sistema Online" : "Sistema Offline"}
             </span>
           )}

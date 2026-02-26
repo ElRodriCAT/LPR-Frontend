@@ -16,9 +16,11 @@ export default function Layout() {
         {/* Topbar */}
         <Topbar />
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto p-6 bg-lpr-900">
+        {/* Page Content - 🎯 Smooth scroll con animación */}
+        <main className="flex-1 overflow-auto p-6 bg-lpr-900 scroll-smooth">
+          {/* 🎯 Container con max-width y transiciones */}
           <div className="max-w-7xl mx-auto">
+            {/* 🎯 Outlet con fade-in en cada cambio de ruta */}
             <Outlet />
           </div>
         </main>

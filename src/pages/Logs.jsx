@@ -32,25 +32,28 @@ function DetailModal({ log, onClose }) {
   if (!log) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    // 🎯 Modal con fade-in para overlay y contenido
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn">
       {/* Overlay */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative bg-lpr-800 rounded-2xl border border-lpr-700 shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      {/* Modal - 🎯 Scale-in suave con shadow dramática */}
+      <div className="relative bg-lpr-800 rounded-2xl border border-lpr-700 shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scaleIn">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-lpr-700">
           <div className="flex items-center gap-3">
-            <span className="px-4 py-2 bg-lpr-700 rounded-lg font-mono font-bold text-xl text-accent-cyan">
+            {/* 🎯 Badge de patente con hover */}
+            <span className="px-4 py-2 bg-lpr-700 rounded-lg font-mono font-bold text-xl text-accent-cyan transition-all duration-200 hover:bg-accent-cyan/20 hover:scale-105">
               {log.plate}
             </span>
           </div>
+          {/* 🎯 Botón cerrar con microescalado */}
           <button
             onClick={onClose}
-            className="p-2 hover:bg-lpr-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-lpr-700 rounded-lg transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-95"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -64,15 +67,16 @@ function DetailModal({ log, onClose }) {
           <div>
             <h4 className="text-sm font-medium text-gray-400 mb-3">Información del Vehículo</h4>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-lpr-700/50 rounded-lg p-3">
+              {/* 🎯 Cards con hover sutil */}
+              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
                 <p className="text-xs text-gray-500">Marca</p>
                 <p className="font-medium">{log.vehicle.brand}</p>
               </div>
-              <div className="bg-lpr-700/50 rounded-lg p-3">
+              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
                 <p className="text-xs text-gray-500">Modelo</p>
                 <p className="font-medium">{log.vehicle.model}</p>
               </div>
-              <div className="bg-lpr-700/50 rounded-lg p-3">
+              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
                 <p className="text-xs text-gray-500">Color</p>
                 <p className="font-medium">{log.vehicle.color}</p>
               </div>
@@ -84,8 +88,8 @@ function DetailModal({ log, onClose }) {
           <div>
             <h4 className="text-sm font-medium text-gray-400 mb-3">Estadísticas de Acceso</h4>
             <div className="grid grid-cols-2 gap-4">
-              {/* Today */}
-              <div className="bg-lpr-700/50 rounded-lg p-4">
+              {/* Today - 🎯 Card con hover */}
+              <div className="bg-lpr-700/50 rounded-lg p-4 transition-all duration-200 hover:bg-lpr-700/70">
                 <p className="text-xs text-gray-500 mb-2">Hoy</p>
                 <div className="flex items-center justify-between">
                   <div className="text-center">
@@ -100,8 +104,8 @@ function DetailModal({ log, onClose }) {
                 </div>
               </div>
 
-              {/* Week */}
-              <div className="bg-lpr-700/50 rounded-lg p-4">
+              {/* Week - 🎯 Card con hover */}
+              <div className="bg-lpr-700/50 rounded-lg p-4 transition-all duration-200 hover:bg-lpr-700/70">
                 <p className="text-xs text-gray-500 mb-2">Esta Semana</p>
                 <div className="flex items-center justify-between">
                   <div className="text-center">
@@ -118,8 +122,8 @@ function DetailModal({ log, onClose }) {
             </div>
           </div>
 
-          {/* Last Detection */}
-          <div className="bg-lpr-700/30 rounded-lg p-4 border border-lpr-600">
+          {/* Last Detection - 🎯 Card con hover y borde animado */}
+          <div className="bg-lpr-700/30 rounded-lg p-4 border border-lpr-600 transition-all duration-300 hover:border-accent-cyan/50 hover:bg-lpr-700/40">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500">Última Detección</p>
@@ -151,13 +155,15 @@ export default function Logs() {
   const [hoveredId, setHoveredId] = useState(null);
 
   return (
-    <div className="space-y-6">
-      <div>
+    // 🎯 Fade-in para toda la página
+    <div className="space-y-6 animate-fadeIn">
+      <div className="opacity-0 animate-slideInDown">
         <h2 className="text-3xl font-bold mb-2">Registros</h2>
         <p className="text-gray-400">Historial de patentes detectadas por el sistema.</p>
       </div>
 
-      <div className="bg-lpr-800 rounded-xl border border-lpr-700 overflow-hidden">
+      {/* 🎯 Tabla con animación de entrada y borde hover */}
+      <div className="opacity-0 animate-fadeInUp bg-lpr-800 rounded-xl border border-lpr-700 overflow-hidden hover:border-lpr-600 transition-colors duration-300" style={{ animationDelay: '100ms' }}>
         <table className="w-full">
           <thead className="bg-lpr-700">
             <tr>
@@ -170,17 +176,20 @@ export default function Logs() {
           </thead>
           <tbody className="divide-y divide-lpr-700">
             {logsData.map((log) => (
-              <tr key={log.id} className="hover:bg-lpr-700/50 transition-colors">
+              // 🎯 Fila con hover suave + ligero translate
+              <tr key={log.id} className="hover:bg-lpr-800/40 transition-all duration-200 hover:shadow-md">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-3 py-1 bg-lpr-700 rounded-lg font-mono font-bold text-accent-cyan">
+                  {/* 🎯 Badge de patente con hover */}
+                  <span className="px-3 py-1 bg-lpr-700 rounded-lg font-mono font-bold text-accent-cyan transition-all duration-200 hover:bg-accent-cyan/20 hover:scale-105 inline-block">
                     {log.plate}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{log.datetime}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{log.camera}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 transition-colors duration-200">{log.datetime}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 transition-colors duration-200">{log.camera}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
+                  {/* 🎯 Badge de tipo con transición */}
                   <span
-                    className={`px-2 py-1 text-xs rounded-full ${
+                    className={`px-2 py-1 text-xs rounded-full transition-all duration-200 hover:scale-110 inline-block ${
                       log.type === "entrada"
                         ? "bg-accent-green/20 text-accent-green"
                         : "bg-yellow-500/20 text-yellow-400"
@@ -190,14 +199,17 @@ export default function Logs() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
+                  {/* 🎯 Botón con ícono que cambia suavemente + microescalado */}
                   <button
                     onClick={() => setSelectedLog(log)}
                     onMouseEnter={() => setHoveredId(log.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className="p-2 hover:bg-lpr-600 rounded-lg transition-all text-gray-400 hover:text-accent-cyan"
+                    className="p-2 hover:bg-lpr-600 rounded-lg transition-all duration-200 text-gray-400 hover:text-accent-cyan hover:scale-110 active:scale-95"
                     title="Ver detalle"
                   >
-                    {hoveredId === log.id ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                    <div className="transition-transform duration-200">
+                      {hoveredId === log.id ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                    </div>
                   </button>
                 </td>
               </tr>
