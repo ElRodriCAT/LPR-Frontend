@@ -56,10 +56,10 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   return (
     <aside
       // 🎯 Transición suave del ancho (500ms con easing personalizado)
-      // Cambio de ease-in-out a ease-out para inicio más fluido
+      // Semitransparente con backdrop-blur para ver el gradiente AI detrás
       className={`${
         collapsed ? "w-16" : "w-64"
-      } h-screen bg-lpr-800 border-r border-lpr-700 flex flex-col transition-all duration-500 ease-out shadow-xl`}
+      } h-screen bg-lpr-800/80 backdrop-blur-md border-r border-lpr-700 flex flex-col transition-all duration-500 ease-out shadow-xl relative z-20`}
     >
       {/* Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-lpr-700">

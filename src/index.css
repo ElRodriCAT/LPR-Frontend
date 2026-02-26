@@ -163,3 +163,107 @@
    - ease-in-out: suave en ambos extremos (mejor para transiciones)
    - cubic-bezier(0.4, 0, 0.2, 1): easing personalizado de Material Design
 */
+
+/* ========================================
+   🌌 INTERACTIVE GRADIENT AI - FONDO INTERACTIVO
+   ======================================== */
+
+/* Container principal del gradiente */
+.interactive-gradient-ai {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none; /* No interfiere con clicks */
+  z-index: 0; /* Detrás de todo el contenido */
+}
+
+/* Capa de fondo base - Color oscuro sólido */
+.base-layer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0d12 0%, #11151c 100%);
+  z-index: 1;
+}
+
+/* Capa de gradiente interactivo que sigue el mouse */
+.gradient-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(58, 123, 213, 0.15) 0%,
+    rgba(94, 168, 255, 0.08) 25%,
+    rgba(145, 193, 255, 0.03) 50%,
+    transparent 100%
+  );
+  z-index: 2;
+  transition: opacity 0.15s ease-out;
+  filter: blur(80px);
+  mix-blend-mode: screen;
+}
+
+/* Efecto hover para intensificar el gradiente */
+.interactive-gradient-ai:hover .gradient-layer {
+  opacity: 1;
+}
+
+/* Optimización de rendimiento */
+.gradient-layer,
+.base-layer {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* 🎯 PERSONALIZACIÓN DEL GRADIENTE:
+
+   Ajustar tamaño del gradiente:
+   circle 600px → circle 800px (más grande)
+   circle 600px → circle 400px (más pequeño)
+
+   Ajustar intensidad de colores:
+   rgba(58, 123, 213, 0.15) → rgba(58, 123, 213, 0.25) (más intenso)
+   rgba(58, 123, 213, 0.15) → rgba(58, 123, 213, 0.08) (más sutil)
+
+   Ajustar blur:
+   filter: blur(80px) → blur(120px) (más difuso)
+   filter: blur(80px) → blur(40px) (más definido)
+
+   Cambiar velocidad de transición:
+   transition: opacity 0.15s → 0.25s (más lento)
+   transition: opacity 0.15s → 0.1s (más rápido)
+
+   Cambiar colores del gradiente (mantener opacidad baja):
+   - Azul frío AI: #3a7bd5, #5ea8ff, #91c1ff (actual)
+   - Cyan tech: #00d4ff, #0099cc, #0066aa
+   - Purple tech: #8b5cf6, #a78bfa, #c4b5fd
+   - Green matrix: #10b981, #34d399, #6ee7b7
+
+   Cambiar fondo base:
+   #0a0d12, #11151c → #0f1419, #1a1f2e (más azulado)
+   #0a0d12, #11151c → #080a0e, #0d1015 (más oscuro)
+*/
+
+/* Responsive: Reducir tamaño del gradiente en móviles */
+@media (max-width: 768px) {
+  .gradient-layer {
+    background: radial-gradient(
+      circle 400px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(58, 123, 213, 0.12) 0%,
+      rgba(94, 168, 255, 0.06) 25%,
+      rgba(145, 193, 255, 0.02) 50%,
+      transparent 100%
+    );
+    filter: blur(60px);
+  }
+}
+
+/* Prefers-reduced-motion: Desactivar efectos para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+  .gradient-layer {
+    transition: none;
+    animation: none;
+  }
+}
