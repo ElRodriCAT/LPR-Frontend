@@ -56,13 +56,13 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   return (
     <aside
       // 🎯 Transición suave del ancho (500ms con easing personalizado)
-      // Semitransparente con backdrop-blur para ver el gradiente AI detrás
+      // Mayor opacidad para mejor legibilidad con backdrop-blur
       className={`${
         collapsed ? "w-16" : "w-64"
-      } h-screen bg-lpr-800/80 backdrop-blur-md border-r border-lpr-700 flex flex-col transition-all duration-500 ease-out shadow-xl relative z-20`}
+      } h-screen bg-surface-light/95 backdrop-blur-md border-r border-surface-lighter flex flex-col transition-all duration-500 ease-out shadow-xl relative z-20`}
     >
       {/* Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-lpr-700">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-surface-lighter">
         {!collapsed && (
           <span className="font-semibold text-lg transition-colors duration-200 animate-slideInRight">
             LPR System
@@ -71,7 +71,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         <button
           onClick={() => setCollapsed(!collapsed)}
           // 🎯 Microinteracción: scale ligero + rotación + color
-          className="p-2 hover:bg-lpr-700 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
+          className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 hover:scale-110 active:scale-95"
           title={collapsed ? "Expandir" : "Colapsar"}
         >
           <svg
@@ -100,8 +100,8 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               // - border-l-2: indicador visual del item activo con animación
               `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
                 isActive
-                  ? "bg-accent-green/20 text-accent-green border-l-2 border-accent-green shadow-md shadow-accent-green/10"
-                  : "text-gray-400 hover:bg-lpr-700 hover:text-white hover:scale-[1.02] hover:shadow-md"
+                  ? "bg-primary/20 text-primary-light border-l-2 border-primary shadow-md shadow-primary/10"
+                  : "text-text-secondary hover:bg-surface-lighter hover:text-text-primary hover:scale-[1.02] hover:shadow-md"
               } ${collapsed ? "justify-center" : ""}`
             }
             title={collapsed ? item.name : undefined}
@@ -121,16 +121,16 @@ export default function Sidebar({ collapsed, setCollapsed }) {
       </nav>
 
       {/* System Status */}
-      <div className="p-4 border-t border-lpr-700">
+      <div className="p-4 border-t border-surface-lighter">
         <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : ""} transition-all duration-300`}>
           <div
             // 🎯 Pulso suave para indicador de estado online
             className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-              systemOnline ? "bg-accent-green animate-pulse shadow-lg shadow-accent-green/50" : "bg-red-500 animate-pulse shadow-lg shadow-red-500/50"
+              systemOnline ? "bg-status-success animate-pulse shadow-lg shadow-status-success/50" : "bg-status-error animate-pulse shadow-lg shadow-status-error/50"
             }`}
           />
           {!collapsed && (
-            <span className={`text-sm transition-colors duration-300 animate-slideInRight ${systemOnline ? "text-accent-green" : "text-red-400"}`}>
+            <span className={`text-sm transition-colors duration-300 animate-slideInRight ${systemOnline ? "text-status-success" : "text-status-error"}`}>
               {systemOnline ? "Sistema Online" : "Sistema Offline"}
             </span>
           )}

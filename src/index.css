@@ -27,11 +27,7 @@
   background-color: #4a4a4a;
 }
 
-/* ========================================
-   🎨 ANIMACIONES PERSONALIZADAS - SISTEMA LPR
-   ======================================== */
 
-/* 🎯 Fade In - Aparición suave con opacidad */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -179,28 +175,28 @@
   z-index: 0; /* Detrás de todo el contenido */
 }
 
-/* Capa de fondo base - Color oscuro sólido */
+/* Capa de fondo base - Color corporativo oscuro */
 .base-layer {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0a0d12 0%, #11151c 100%);
+  background: linear-gradient(135deg, #0B0E13 0%, #141821 100%);
   z-index: 1;
 }
 
-/* Capa de gradiente interactivo que sigue el mouse */
+/* Capa de gradiente interactivo - Paleta corporativa azul tech (MÁS SUTIL) */
 .gradient-layer {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(58, 123, 213, 0.15) 0%,
-    rgba(94, 168, 255, 0.08) 25%,
-    rgba(145, 193, 255, 0.03) 50%,
+    circle 650px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(58, 123, 213, 0.10) 0%,      /* #3A7BD5 - Primary (reducido de 0.18) */
+    rgba(94, 168, 255, 0.07) 30%,     /* #5EA8FF - Accent (reducido de 0.12) */
+    rgba(15, 224, 255, 0.03) 60%,     /* #0FE0FF - Glow (reducido de 0.06) */
     transparent 100%
   );
   z-index: 2;
-  transition: opacity 0.15s ease-out;
-  filter: blur(80px);
+  transition: opacity 0.18s ease-out;
+  filter: blur(100px);  /* Aumentado de 90px para mayor difusión */
   mix-blend-mode: screen;
 }
 
@@ -246,17 +242,17 @@
    #0a0d12, #11151c → #080a0e, #0d1015 (más oscuro)
 */
 
-/* Responsive: Reducir tamaño del gradiente en móviles */
+/* Responsive: Reducir tamaño del gradiente en móviles (MÁS SUTIL) */
 @media (max-width: 768px) {
   .gradient-layer {
     background: radial-gradient(
       circle 400px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(58, 123, 213, 0.12) 0%,
-      rgba(94, 168, 255, 0.06) 25%,
-      rgba(145, 193, 255, 0.02) 50%,
+      rgba(58, 123, 213, 0.08) 0%,      /* Reducido de 0.12 */
+      rgba(94, 168, 255, 0.04) 25%,     /* Reducido de 0.06 */
+      rgba(145, 193, 255, 0.01) 50%,    /* Reducido de 0.02 */
       transparent 100%
     );
-    filter: blur(60px);
+    filter: blur(70px);  /* Aumentado de 60px */
   }
 }
 

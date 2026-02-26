@@ -8,7 +8,7 @@ export default function Layout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="h-screen w-full bg-lpr-900 text-white flex overflow-hidden relative">
+    <div className="h-screen w-full text-text-primary flex overflow-hidden relative">
       {/* 🌌 Fondo interactivo con gradiente AI - Detrás de todo */}
       <InteractiveGradientAI />
       
@@ -16,7 +16,7 @@ export default function Layout() {
       <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">{/* z-10 para estar sobre el fondo */}
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         {/* Topbar */}
         <Topbar />
 

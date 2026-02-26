@@ -40,20 +40,20 @@ function DetailModal({ log, onClose }) {
         onClick={onClose}
       />
       
-      {/* Modal - 🎯 Scale-in suave con shadow dramática */}
-      <div className="relative bg-lpr-800 rounded-2xl border border-lpr-700 shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scaleIn">
+      {/* Modal - 🎯 Scale-in suave con shadow dramática y mayor opacidad */}
+      <div className="relative bg-surface-light/98 backdrop-blur-md rounded-2xl border border-surface-lighter shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scaleIn">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lpr-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-lighter">
           <div className="flex items-center gap-3">
             {/* 🎯 Badge de patente con hover */}
-            <span className="px-4 py-2 bg-lpr-700 rounded-lg font-mono font-bold text-xl text-accent-cyan transition-all duration-200 hover:bg-accent-cyan/20 hover:scale-105">
+            <span className="px-4 py-2 bg-surface-lighter rounded-lg font-mono font-bold text-xl text-primary-light transition-all duration-200 hover:bg-primary/20 hover:scale-105">
               {log.plate}
             </span>
           </div>
           {/* 🎯 Botón cerrar con microescalado */}
           <button
             onClick={onClose}
-            className="p-2 hover:bg-lpr-700 rounded-lg transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-95"
+            className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-95 text-text-primary"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -65,20 +65,20 @@ function DetailModal({ log, onClose }) {
         <div className="p-6 space-y-6">
           {/* Vehicle Info */}
           <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-3">Información del Vehículo</h4>
+            <h4 className="text-sm font-medium text-text-secondary mb-3">Información del Vehículo</h4>
             <div className="grid grid-cols-2 gap-4">
               {/* 🎯 Cards con hover sutil */}
-              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
-                <p className="text-xs text-gray-500">Marca</p>
-                <p className="font-medium">{log.vehicle.brand}</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
+                <p className="text-xs text-text-muted">Marca</p>
+                <p className="font-medium text-text-primary">{log.vehicle.brand}</p>
               </div>
-              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
-                <p className="text-xs text-gray-500">Modelo</p>
-                <p className="font-medium">{log.vehicle.model}</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
+                <p className="text-xs text-text-muted">Modelo</p>
+                <p className="font-medium text-text-primary">{log.vehicle.model}</p>
               </div>
-              <div className="bg-lpr-700/50 rounded-lg p-3 transition-all duration-200 hover:bg-lpr-700/70 hover:scale-[1.02]">
-                <p className="text-xs text-gray-500">Color</p>
-                <p className="font-medium">{log.vehicle.color}</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
+                <p className="text-xs text-text-muted">Color</p>
+                <p className="font-medium text-text-primary">{log.vehicle.color}</p>
               </div>
            
             </div>
@@ -86,36 +86,36 @@ function DetailModal({ log, onClose }) {
 
           {/* Stats */}
           <div>
-            <h4 className="text-sm font-medium text-gray-400 mb-3">Estadísticas de Acceso</h4>
+            <h4 className="text-sm font-medium text-text-secondary mb-3">Estadísticas de Acceso</h4>
             <div className="grid grid-cols-2 gap-4">
               {/* Today - 🎯 Card con hover */}
-              <div className="bg-lpr-700/50 rounded-lg p-4 transition-all duration-200 hover:bg-lpr-700/70">
-                <p className="text-xs text-gray-500 mb-2">Hoy</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-4 transition-all duration-200 hover:bg-surface-lighter">
+                <p className="text-xs text-text-muted mb-2">Hoy</p>
                 <div className="flex items-center justify-between">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-accent-green">{log.todayEntries}</p>
-                    <p className="text-xs text-gray-400">Entradas</p>
+                    <p className="text-2xl font-bold text-status-success">{log.todayEntries}</p>
+                    <p className="text-xs text-text-secondary">Entradas</p>
                   </div>
-                  <div className="h-8 w-px bg-lpr-600" />
+                  <div className="h-8 w-px bg-surface-lighter" />
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-400">{log.todayExits}</p>
-                    <p className="text-xs text-gray-400">Salidas</p>
+                    <p className="text-2xl font-bold text-status-warning">{log.todayExits}</p>
+                    <p className="text-xs text-text-secondary">Salidas</p>
                   </div>
                 </div>
               </div>
 
               {/* Week - 🎯 Card con hover */}
-              <div className="bg-lpr-700/50 rounded-lg p-4 transition-all duration-200 hover:bg-lpr-700/70">
-                <p className="text-xs text-gray-500 mb-2">Esta Semana</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-4 transition-all duration-200 hover:bg-surface-lighter">
+                <p className="text-xs text-text-muted mb-2">Esta Semana</p>
                 <div className="flex items-center justify-between">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-accent-green">{log.weekEntries}</p>
-                    <p className="text-xs text-gray-400">Entradas</p>
+                    <p className="text-2xl font-bold text-status-success">{log.weekEntries}</p>
+                    <p className="text-xs text-text-secondary">Entradas</p>
                   </div>
-                  <div className="h-8 w-px bg-lpr-600" />
+                  <div className="h-8 w-px bg-surface-lighter" />
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-400">{log.weekExits}</p>
-                    <p className="text-xs text-gray-400">Salidas</p>
+                    <p className="text-2xl font-bold text-status-warning">{log.weekExits}</p>
+                    <p className="text-xs text-text-secondary">Salidas</p>
                   </div>
                 </div>
               </div>
@@ -123,21 +123,21 @@ function DetailModal({ log, onClose }) {
           </div>
 
           {/* Last Detection - 🎯 Card con hover y borde animado */}
-          <div className="bg-lpr-700/30 rounded-lg p-4 border border-lpr-600 transition-all duration-300 hover:border-accent-cyan/50 hover:bg-lpr-700/40">
+          <div className="bg-surface-lighter/30 rounded-lg p-4 border border-surface-lighter transition-all duration-300 hover:border-primary/50 hover:bg-surface-lighter/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Última Detección</p>
-                <p className="font-medium">{log.datetime}</p>
+                <p className="text-xs text-text-muted">Última Detección</p>
+                <p className="font-medium text-text-primary">{log.datetime}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500">Cámara</p>
-                <p className="font-medium">{log.camera}</p>
+                <p className="text-xs text-text-muted">Cámara</p>
+                <p className="font-medium text-text-primary">{log.camera}</p>
               </div>
               <span
                 className={`px-3 py-1 text-sm rounded-full ${
                   log.type === "entrada"
-                    ? "bg-accent-green/20 text-accent-green"
-                    : "bg-yellow-500/20 text-yellow-400"
+                    ? "bg-status-success/20 text-status-success"
+                    : "bg-status-warning/20 text-status-warning"
                 }`}
               >
                 {log.type}
@@ -158,41 +158,41 @@ export default function Logs() {
     // 🎯 Fade-in para toda la página
     <div className="space-y-6 animate-fadeIn">
       <div className="opacity-0 animate-slideInDown">
-        <h2 className="text-3xl font-bold mb-2">Registros</h2>
-        <p className="text-gray-400">Historial de patentes detectadas por el sistema.</p>
+        <h2 className="text-3xl font-bold mb-2 text-text-primary">Registros</h2>
+        <p className="text-text-secondary">Historial de patentes detectadas por el sistema.</p>
       </div>
 
-      {/* 🎯 Tabla con animación de entrada y borde hover */}
-      <div className="opacity-0 animate-fadeInUp bg-lpr-800 rounded-xl border border-lpr-700 overflow-hidden hover:border-lpr-600 transition-colors duration-300" style={{ animationDelay: '100ms' }}>
+      {/* 🎯 Tabla con animación de entrada, borde hover y mayor opacidad */}
+      <div className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl border border-surface-lighter overflow-hidden hover:border-primary/50 transition-colors duration-300" style={{ animationDelay: '100ms' }}>
         <table className="w-full">
-          <thead className="bg-lpr-700">
+          <thead className="bg-surface-lighter">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Patente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fecha / Hora</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Cámara</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Detalle</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Patente</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Fecha / Hora</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Cámara</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Tipo</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Detalle</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-lpr-700">
+          <tbody className="divide-y divide-surface-lighter">
             {logsData.map((log) => (
               // 🎯 Fila con hover suave + ligero translate
-              <tr key={log.id} className="hover:bg-lpr-800/40 transition-all duration-200 hover:shadow-md">
+              <tr key={log.id} className="hover:bg-surface-lighter/30 transition-all duration-200 hover:shadow-md">
                 <td className="px-6 py-4 whitespace-nowrap">
                   {/* 🎯 Badge de patente con hover */}
-                  <span className="px-3 py-1 bg-lpr-700 rounded-lg font-mono font-bold text-accent-cyan transition-all duration-200 hover:bg-accent-cyan/20 hover:scale-105 inline-block">
+                  <span className="px-3 py-1 bg-surface-lighter rounded-lg font-mono font-bold text-primary-light transition-all duration-200 hover:bg-primary/20 hover:scale-105 inline-block">
                     {log.plate}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 transition-colors duration-200">{log.datetime}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 transition-colors duration-200">{log.camera}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary transition-colors duration-200">{log.datetime}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary transition-colors duration-200">{log.camera}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {/* 🎯 Badge de tipo con transición */}
                   <span
                     className={`px-2 py-1 text-xs rounded-full transition-all duration-200 hover:scale-110 inline-block ${
                       log.type === "entrada"
-                        ? "bg-accent-green/20 text-accent-green"
-                        : "bg-yellow-500/20 text-yellow-400"
+                        ? "bg-status-success/20 text-status-success"
+                        : "bg-status-warning/20 text-status-warning"
                     }`}
                   >
                     {log.type}
@@ -204,7 +204,7 @@ export default function Logs() {
                     onClick={() => setSelectedLog(log)}
                     onMouseEnter={() => setHoveredId(log.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className="p-2 hover:bg-lpr-600 rounded-lg transition-all duration-200 text-gray-400 hover:text-accent-cyan hover:scale-110 active:scale-95"
+                    className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 text-text-muted hover:text-accent-bright hover:scale-110 active:scale-95"
                     title="Ver detalle"
                   >
                     <div className="transition-transform duration-200">

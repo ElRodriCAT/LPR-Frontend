@@ -1,13 +1,19 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * InteractiveGradientAI - Fondo interactivo con gradiente azul AI
+ * InteractiveGradientAI - Fondo interactivo con gradiente azul corporativo
+ * 
+ * Paleta Corporativa:
+ * - Primary: #3A7BD5
+ * - Accent: #5EA8FF
+ * - Glow: #0FE0FF
  * 
  * Características:
- * - Gradiente radial azul frío que sigue el mouse
- * - Efecto glow suave y profesional
+ * - Gradiente radial que sigue el mouse
+ * - Opacidades muy sutiles (3-10%) - Optimizado para no dominar la UI
+ * - Blur aumentado (100px) para máxima suavidad
  * - Optimizado para rendimiento
- * - Estilo minimalista y tecnológico
+ * - Estilo corporativo tech profesional y discreto
  */
 export default function InteractiveGradientAI() {
   const gradientRef = useRef(null);
