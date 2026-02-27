@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useSortableList } from '../hooks/useSortableList';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement,
@@ -113,6 +115,44 @@ function NoData() {
   );
 }
 
+// ---- Drag handle ----
+function DragHandle(props) {
+  return (
+    <div
+      {...props}
+      className="opacity-0 group-hover:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing text-text-muted p-1.5 rounded hover:bg-surface-lighter/80 transition-all duration-150 absolute top-3 right-3"
+      title="Reordenar"
+    >
+      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+        <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+        <circle cx="2" cy="7" r="1.5"/><circle cx="8" cy="7" r="1.5"/>
+        <circle cx="2" cy="12" r="1.5"/><circle cx="8" cy="12" r="1.5"/>
+      </svg>
+    </div>
+  );
+}
+
+// ---- Definición de KPI cards ----
+const KPI_IDS = ['total', 'entries', 'exits', 'avgConf'];
+
+function getKpiDef(id, { totalDets, entries, exits, avgConf, loading }) {
+  return {
+    total:   { label: 'Total detectadas', color: 'primary-light',  value: totalDets,                          loading },
+    entries: { label: 'Entradas',          color: 'status-success', value: entries,                            loading },
+    exits:   { label: 'Salidas',           color: 'status-warning', value: exits,                              loading },
+    avgConf: { label: 'Confianza prom.',   color: 'accent-bright',  value: avgConf === '—' ? '—' : `${avgConf}%`, loading },
+  }[id];
+}
+
+// ---- Definición de chart sections ----
+const CHART_IDS = ['hourBar', 'doughnut', 'line'];
+
+const CHART_META = {
+  hourBar:  { span: 1 },
+  doughnut: { span: 1 },
+  line:     { span: 2 },
+};
+
 // ---------- Página ----------
 const RANGES = [7, 30, 90];
 
@@ -186,6 +226,54 @@ export default function Stats() {
   const avgConf    = detections?.length
     ? ((detections.reduce((s, d) => s + (d.confidence ?? 0), 0) / detections.length) * 100).toFixed(1)
     : '—';
+  const kpiValues  = { totalDets, entries, exits, avgConf, loading };
+
+  const { order: kpiOrder,   onDragEnd: onKpiDragEnd   } = useSortableList('stats-kpis',   KPI_IDS);
+  const { order: chartOrder, onDragEnd: onChartDragEnd } = useSortableList('stats-charts', CHART_IDS);
+
+  function renderChart(id) {
+    if (id === 'hourBar') return (
+      <>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-text-primary pr-8">
+          Detecciones por Hora
+          <span className="text-xs px-2 py-0.5 bg-status-success/20 text-status-success rounded-full animate-pulse">Live</span>
+        </h3>
+        {error ? <ChartError /> : loading ? <ChartLoading /> : !hourData ? <NoData /> :
+          <div className="h-64"><Bar data={hourData} options={baseOptions} /></div>}
+      </>
+    );
+    if (id === 'doughnut') return (
+      <>
+        <h3 className="text-lg font-semibold mb-4 text-text-primary pr-8">Entradas vs Salidas</h3>
+        {error ? <ChartError /> : loading ? <ChartLoading /> : !doughnutData ? <NoData /> :
+          <div className="h-64"><Doughnut data={doughnutData} options={noScalesOptions} /></div>}
+      </>
+    );
+    if (id === 'line') return (
+      <>
+        <h3 className="text-lg font-semibold mb-4 flex items-center justify-between text-text-primary pr-8">
+          <span>Tendencia por Día</span>
+          <div className="flex gap-2">
+            {RANGES.map(r => (
+              <button
+                key={r}
+                onClick={() => setRangeDays(r)}
+                className={`px-3 py-1 text-xs rounded-lg transition-all duration-200 ${
+                  rangeDays === r
+                    ? 'bg-accent-bright/20 text-accent-bright shadow-md'
+                    : 'bg-surface-lighter text-text-secondary hover:bg-surface-lighter/80 hover:text-text-primary'
+                } hover:scale-105 active:scale-95`}
+              >
+                {r}D
+              </button>
+            ))}
+          </div>
+        </h3>
+        {error ? <ChartError /> : loading ? <ChartLoading /> : !lineData ? <NoData /> :
+          <div className="h-64"><Line data={lineData} options={baseOptions} /></div>}
+      </>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -195,88 +283,80 @@ export default function Stats() {
         <p className="text-text-secondary">Análisis de las últimas {totalDets} detecciones.</p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total detectadas', value: totalDets, color: 'primary-light' },
-          { label: 'Entradas',          value: entries,   color: 'status-success' },
-          { label: 'Salidas',           value: exits,     color: 'status-warning' },
-          { label: 'Confianza prom.',   value: avgConf === '—' ? '—' : `${avgConf}%`, color: 'accent-bright' },
-        ].map((k, idx) => (
-          <div
-            key={idx}
-            className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl p-5 border border-surface-lighter hover:border-primary/50 hover:-translate-y-1 transition-all duration-300"
-            style={{ animationDelay: `${idx * 80}ms` }}
-          >
-            <p className="text-sm text-text-secondary mb-1">{k.label}</p>
-            {loading
-              ? <div className="h-8 w-20 bg-surface-lighter animate-pulse rounded" />
-              : <p className={`text-2xl font-bold text-${k.color}`}>{k.value}</p>
-            }
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar: Detecciones por Hora */}
-        <div
-          className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl p-6 border border-surface-lighter hover:border-primary/50 hover:shadow-glow-primary transition-all duration-300 hover:-translate-y-1"
-          style={{ animationDelay: '100ms' }}
-        >
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-text-primary">
-            Detecciones por Hora
-            <span className="text-xs px-2 py-0.5 bg-status-success/20 text-status-success rounded-full animate-pulse">Live</span>
-          </h3>
-          {error   ? <ChartError />  :
-           loading ? <ChartLoading /> :
-           !hourData ? <NoData /> :
-           <div className="h-64"><Bar data={hourData} options={baseOptions} /></div>
-          }
-        </div>
-
-        {/* Doughnut: Entradas vs Salidas */}
-        <div
-          className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl p-6 border border-surface-lighter hover:border-primary/50 hover:shadow-glow-primary transition-all duration-300 hover:-translate-y-1"
-          style={{ animationDelay: '200ms' }}
-        >
-          <h3 className="text-lg font-semibold mb-4 text-text-primary">Entradas vs Salidas</h3>
-          {error   ? <ChartError />  :
-           loading ? <ChartLoading /> :
-           !doughnutData ? <NoData /> :
-           <div className="h-64"><Doughnut data={doughnutData} options={noScalesOptions} /></div>
-          }
-        </div>
-
-        {/* Line: Tendencia por días */}
-        <div
-          className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl p-6 border border-surface-lighter hover:border-primary/50 hover:shadow-glow-primary transition-all duration-300 hover:-translate-y-1 lg:col-span-2"
-          style={{ animationDelay: '300ms' }}
-        >
-          <h3 className="text-lg font-semibold mb-4 flex items-center justify-between text-text-primary">
-            <span>Tendencia por Día</span>
-            <div className="flex gap-2">
-              {RANGES.map(r => (
-                <button
-                  key={r}
-                  onClick={() => setRangeDays(r)}
-                  className={`px-3 py-1 text-xs rounded-lg transition-all duration-200 ${
-                    rangeDays === r
-                      ? 'bg-accent-bright/20 text-accent-bright shadow-md'
-                      : 'bg-surface-lighter text-text-secondary hover:bg-surface-lighter/80 hover:text-text-primary'
-                  } hover:scale-105 active:scale-95`}
-                >
-                  {r}D
-                </button>
-              ))}
+      {/* KPI cards — arrastrables */}
+      <DragDropContext onDragEnd={onKpiDragEnd}>
+        <Droppable droppableId="stats-kpis" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex gap-4"
+            >
+              {kpiOrder.map((id, index) => {
+                const kpi = getKpiDef(id, kpiValues);
+                return (
+                  <Draggable key={id} draggableId={id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`group relative flex-1 min-w-0 bg-surface-light/85 backdrop-blur-sm rounded-xl p-5 border transition-all duration-200 ease-out ${
+                          snapshot.isDragging
+                            ? 'border-primary/70 shadow-glow-primary scale-[1.04] rotate-1 z-50'
+                            : 'border-surface-lighter hover:border-primary/50 hover:-translate-y-1 transition-all duration-300'
+                        }`}
+                      >
+                        <DragHandle {...provided.dragHandleProps} />
+                        <p className="text-sm text-text-secondary mb-1 pr-6">{kpi.label}</p>
+                        {kpi.loading
+                          ? <div className="h-8 w-20 bg-surface-lighter animate-pulse rounded" />
+                          : <p className={`text-2xl font-bold text-${kpi.color}`}>{kpi.value}</p>
+                        }
+                      </div>
+                    )}
+                  </Draggable>
+                );
+              })}
+              {provided.placeholder}
             </div>
-          </h3>
-          {error   ? <ChartError />  :
-           loading ? <ChartLoading /> :
-           !lineData ? <NoData /> :
-           <div className="h-64"><Line data={lineData} options={baseOptions} /></div>
-          }
-        </div>
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      {/* Chart sections — arrastrables */}
+      <DragDropContext onDragEnd={onChartDragEnd}>
+        <Droppable droppableId="stats-charts">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            >
+              {chartOrder.map((id, index) => (
+                <Draggable key={id} draggableId={id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={`group relative bg-surface-light/85 backdrop-blur-sm rounded-xl p-6 border transition-all duration-200 ease-out ${
+                        CHART_META[id].span === 2 ? 'lg:col-span-2' : ''
+                      } ${
+                        snapshot.isDragging
+                          ? 'border-primary/70 shadow-glow-primary scale-[1.01] z-50'
+                          : 'border-surface-lighter hover:border-primary/50 hover:shadow-glow-primary hover:-translate-y-1'
+                      }`}
+                    >
+                      <DragHandle {...provided.dragHandleProps} />
+                      {renderChart(id)}
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }

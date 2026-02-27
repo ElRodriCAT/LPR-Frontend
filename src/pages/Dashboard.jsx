@@ -1,21 +1,36 @@
 import { useCallback } from 'react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { getDetections, getVehicles } from '../api/services/lprService';
 import { usePolling } from '../hooks/usePolling';
+import { useSortableList } from '../hooks/useSortableList';
 
-function StatCard({ label, value, color, delay, loading }) {
+// ---- Drag handle ----
+function DragHandle(props) {
   return (
     <div
-      className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl p-5 border border-surface-lighter hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-glow-primary transition-all duration-300 ease-out"
-      style={{ animationDelay: `${delay}ms` }}
+      {...props}
+      className="opacity-0 group-hover:opacity-50 hover:!opacity-100 cursor-grab active:cursor-grabbing text-text-muted p-1.5 rounded hover:bg-surface-lighter/80 transition-all duration-150 absolute top-2 right-2"
+      title="Reordenar"
     >
-      <p className="text-sm text-text-secondary mb-1">{label}</p>
-      {loading ? (
-        <div className="h-8 w-20 bg-surface-lighter animate-pulse rounded" />
-      ) : (
-        <p className={`text-2xl font-bold text-${color}`}>{value}</p>
-      )}
+      <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+        <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+        <circle cx="2" cy="7" r="1.5"/><circle cx="8" cy="7" r="1.5"/>
+        <circle cx="2" cy="12" r="1.5"/><circle cx="8" cy="12" r="1.5"/>
+      </svg>
     </div>
   );
+}
+
+// ---- Definición de stat cards ----
+const STAT_IDS = ['inside', 'entries', 'exits', 'recent'];
+
+function getStatDef(id, { insideCount, entriesCount, exitsCount, recentCount, loadingD, loadingV }) {
+  return {
+    inside:  { label: 'Vehículos Adentro',    color: 'primary-light',  value: insideCount,  loading: loadingV },
+    entries: { label: 'Entradas Hoy',          color: 'status-success', value: entriesCount, loading: loadingD },
+    exits:   { label: 'Salidas Hoy',           color: 'status-warning', value: exitsCount,   loading: loadingD },
+    recent:  { label: 'Detecciones Recientes', color: 'accent-bright',  value: recentCount,  loading: loadingD },
+  }[id];
 }
 
 function formatTimeAgo(dateStr) {
@@ -32,11 +47,15 @@ export default function Dashboard() {
   const { data: detections, loading: loadingD, error: errorD } = usePolling(fetchDetections, 5000, []);
   const { data: vehicles,   loading: loadingV }                 = usePolling(fetchVehicles,   5000, []);
 
-  const today          = new Date().toISOString().slice(0, 10);
-  const todayDets      = (detections ?? []).filter(d => d.detection_timestamp?.slice(0, 10) === today);
-  const insideCount    = vehicles?.length ?? 0;
-  const entriesCount   = todayDets.filter(d => d.event === 'entry').length;
-  const exitsCount     = todayDets.filter(d => d.event === 'exit').length;
+  const today        = new Date().toISOString().slice(0, 10);
+  const todayDets    = (detections ?? []).filter(d => d.detection_timestamp?.slice(0, 10) === today);
+  const insideCount  = vehicles?.length ?? 0;
+  const entriesCount = todayDets.filter(d => d.event === 'entry').length;
+  const exitsCount   = todayDets.filter(d => d.event === 'exit').length;
+  const recentCount  = detections?.length ?? 0;
+  const values       = { insideCount, entriesCount, exitsCount, recentCount, loadingD, loadingV };
+
+  const { order: statOrder, onDragEnd: onStatDragEnd } = useSortableList('dashboard-stats', STAT_IDS);
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -46,13 +65,46 @@ export default function Dashboard() {
         <p className="text-text-secondary">Panel en tiempo real del sistema LPR.</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Vehículos Adentro"       value={insideCount}          color="primary-light"   delay={0}   loading={loadingV} />
-        <StatCard label="Entradas Hoy"             value={entriesCount}          color="status-success"  delay={100} loading={loadingD} />
-        <StatCard label="Salidas Hoy"              value={exitsCount}            color="status-warning"  delay={200} loading={loadingD} />
-        <StatCard label="Detecciones Recientes"    value={detections?.length ?? 0} color="accent-bright" delay={300} loading={loadingD} />
-      </div>
+      {/* Stats Cards — arrastrables */}
+      <DragDropContext onDragEnd={onStatDragEnd}>
+        <Droppable droppableId="dashboard-stats" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex gap-4"
+            >
+              {statOrder.map((id, index) => {
+                const stat = getStatDef(id, values);
+                return (
+                  <Draggable key={id} draggableId={id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`group relative flex-1 min-w-0 bg-surface-light/85 backdrop-blur-sm rounded-xl p-5 border transition-all duration-200 ease-out ${
+                          snapshot.isDragging
+                            ? 'border-primary/70 shadow-glow-primary scale-[1.04] rotate-1 z-50'
+                            : 'border-surface-lighter hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-glow-primary'
+                        }`}
+                      >
+                        <DragHandle {...provided.dragHandleProps} />
+                        <p className="text-sm text-text-secondary mb-1 pr-6">{stat.label}</p>
+                        {stat.loading ? (
+                          <div className="h-8 w-20 bg-surface-lighter animate-pulse rounded" />
+                        ) : (
+                          <p className={`text-2xl font-bold text-${stat.color}`}>{stat.value}</p>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                );
+              })}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       {/* Activity Feed */}
       <div
