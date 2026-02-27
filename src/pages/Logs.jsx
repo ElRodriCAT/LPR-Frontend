@@ -1,15 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { getDetections, getVehicle } from "../api/services/lprService";
+import { usePolling } from "../hooks/usePolling";
 
-// Datos de ejemplo con info adicional del vehículo
-const logsData = [
-  { id: 1, plate: "ABC 123", datetime: "2026-02-26 14:32:15", camera: "Entrada Principal", type: "entrada", vehicle: { brand: "Toyota", model: "Corolla", color: "Blanco", owner: "Juan Pérez" }, todayEntries: 3, todayExits: 2, weekEntries: 12, weekExits: 11 },
-  { id: 2, plate: "XYZ 789", datetime: "2026-02-26 14:28:42", camera: "Estacionamiento A", type: "entrada", vehicle: { brand: "Ford", model: "Focus", color: "Negro", owner: "María García" }, todayEntries: 1, todayExits: 0, weekEntries: 5, weekExits: 5 },
-  { id: 3, plate: "DEF 456", datetime: "2026-02-26 14:25:08", camera: "Salida Norte", type: "salida", vehicle: { brand: "Chevrolet", model: "Cruze", color: "Gris", owner: "Carlos López" }, todayEntries: 2, todayExits: 2, weekEntries: 8, weekExits: 8 },
-  { id: 4, plate: "GHI 321", datetime: "2026-02-26 14:20:33", camera: "Entrada Principal", type: "entrada", vehicle: { brand: "Volkswagen", model: "Golf", color: "Azul", owner: "Ana Martínez" }, todayEntries: 1, todayExits: 0, weekEntries: 3, weekExits: 2 },
-  { id: 5, plate: "JKL 654", datetime: "2026-02-26 14:15:19", camera: "Estacionamiento B", type: "salida", vehicle: { brand: "Renault", model: "Sandero", color: "Rojo", owner: "Pedro Sánchez" }, todayEntries: 4, todayExits: 4, weekEntries: 15, weekExits: 15 },
-];
-
-// Iconos de ojo
+// ---------- Iconos ----------
 function EyeClosedIcon() {
   return (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,30 +20,56 @@ function EyeOpenIcon() {
   );
 }
 
-// Modal de detalle
-function DetailModal({ log, onClose }) {
-  if (!log) return null;
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+}
+
+function formatDuration(seconds) {
+  if (!seconds) return '—';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+// ---------- Modal ----------
+function DetailModal({ detection, onClose }) {
+  const [vehicle, setVehicle]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    getVehicle(detection.plate)
+      .then(v  => { setVehicle(v); setError(null); })
+      .catch(() => setError('No se pudo cargar el vehículo.'))
+      .finally(() => setLoading(false));
+  }, [detection.plate]);
 
   return (
-    // 🎯 Modal con fade-in para overlay y contenido
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn">
-      {/* Overlay */}
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
-        onClick={onClose}
-      />
-      
-      {/* Modal - 🎯 Scale-in suave con shadow dramática y mayor opacidad */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-surface-light/98 backdrop-blur-md rounded-2xl border border-surface-lighter shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scaleIn">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-surface-lighter">
           <div className="flex items-center gap-3">
-            {/* 🎯 Badge de patente con hover */}
-            <span className="px-4 py-2 bg-surface-lighter rounded-lg font-mono font-bold text-xl text-primary-light transition-all duration-200 hover:bg-primary/20 hover:scale-105">
-              {log.plate}
+            <span className="px-4 py-2 bg-surface-lighter rounded-lg font-mono font-bold text-xl text-primary-light">
+              {detection.plate}
+            </span>
+            <span className={`px-2 py-1 text-xs rounded-full ${
+              detection.event === 'entry'
+                ? 'bg-status-success/20 text-status-success'
+                : 'bg-status-warning/20 text-status-warning'
+            }`}>
+              {detection.event === 'entry' ? 'Entrada' : 'Salida'}
             </span>
           </div>
-          {/* 🎯 Botón cerrar con microescalado */}
           <button
             onClick={onClose}
             className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-95 text-text-primary"
@@ -62,165 +81,235 @@ function DetailModal({ log, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Vehicle Info */}
+        <div className="p-6 space-y-5">
+          {/* Detección actual */}
           <div>
-            <h4 className="text-sm font-medium text-text-secondary mb-3">Información del Vehículo</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {/* 🎯 Cards con hover sutil */}
-              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
-                <p className="text-xs text-text-muted">Marca</p>
-                <p className="font-medium text-text-primary">{log.vehicle.brand}</p>
+            <h4 className="text-sm font-medium text-text-secondary mb-3">Detección</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-surface-lighter/50 rounded-lg p-3">
+                <p className="text-xs text-text-muted">Fecha / Hora</p>
+                <p className="font-medium text-text-primary text-sm">{formatDate(detection.detection_timestamp)}</p>
               </div>
-              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
-                <p className="text-xs text-text-muted">Modelo</p>
-                <p className="font-medium text-text-primary">{log.vehicle.model}</p>
+              <div className="bg-surface-lighter/50 rounded-lg p-3">
+                <p className="text-xs text-text-muted">Confianza</p>
+                <p className="font-medium text-text-primary">{(detection.confidence * 100).toFixed(1)}%</p>
               </div>
-              <div className="bg-surface-lighter/50 rounded-lg p-3 transition-all duration-200 hover:bg-surface-lighter hover:scale-[1.02]">
-                <p className="text-xs text-text-muted">Color</p>
-                <p className="font-medium text-text-primary">{log.vehicle.color}</p>
-              </div>
-           
             </div>
           </div>
 
-          {/* Stats */}
-          <div>
-            <h4 className="text-sm font-medium text-text-secondary mb-3">Estadísticas de Acceso</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Today - 🎯 Card con hover */}
-              <div className="bg-surface-lighter/50 rounded-lg p-4 transition-all duration-200 hover:bg-surface-lighter">
-                <p className="text-xs text-text-muted mb-2">Hoy</p>
-                <div className="flex items-center justify-between">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-status-success">{log.todayEntries}</p>
-                    <p className="text-xs text-text-secondary">Entradas</p>
+          {/* Info del vehículo */}
+          {loading && (
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-10 bg-surface-lighter/50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          )}
+          {error && <p className="text-sm text-status-error">{error}</p>}
+          {!loading && vehicle && (
+            <>
+              <div>
+                <h4 className="text-sm font-medium text-text-secondary mb-3">Historial del Vehículo</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-surface-lighter/50 rounded-lg p-3">
+                    <p className="text-xs text-text-muted">Estado actual</p>
+                    <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full font-medium ${
+                      vehicle.status === 'inside'
+                        ? 'bg-status-success/20 text-status-success'
+                        : 'bg-surface-lighter text-text-secondary'
+                    }`}>
+                      {vehicle.status === 'inside' ? 'Adentro' : 'Afuera'}
+                    </span>
                   </div>
-                  <div className="h-8 w-px bg-surface-lighter" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-status-warning">{log.todayExits}</p>
-                    <p className="text-xs text-text-secondary">Salidas</p>
+                  <div className="bg-surface-lighter/50 rounded-lg p-3">
+                    <p className="text-xs text-text-muted">Última duración</p>
+                    <p className="font-medium text-text-primary">{formatDuration(vehicle.last_duration)}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Week - 🎯 Card con hover */}
-              <div className="bg-surface-lighter/50 rounded-lg p-4 transition-all duration-200 hover:bg-surface-lighter">
-                <p className="text-xs text-text-muted mb-2">Esta Semana</p>
-                <div className="flex items-center justify-between">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-status-success">{log.weekEntries}</p>
-                    <p className="text-xs text-text-secondary">Entradas</p>
+              <div>
+                <h4 className="text-sm font-medium text-text-secondary mb-3">Estadísticas de Acceso</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-surface-lighter/50 rounded-lg p-4">
+                    <p className="text-xs text-text-muted mb-2">Total</p>
+                    <div className="flex items-center justify-between">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-status-success">{vehicle.total_entries}</p>
+                        <p className="text-xs text-text-secondary">Entradas</p>
+                      </div>
+                      <div className="h-8 w-px bg-surface-lighter" />
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-status-warning">{vehicle.total_exits}</p>
+                        <p className="text-xs text-text-secondary">Salidas</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-8 w-px bg-surface-lighter" />
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-status-warning">{log.weekExits}</p>
-                    <p className="text-xs text-text-secondary">Salidas</p>
+                  <div className="bg-surface-lighter/50 rounded-lg p-4">
+                    <p className="text-xs text-text-muted mb-2">Fechas clave</p>
+                    <div className="space-y-1">
+                      <p className="text-xs text-text-secondary">
+                        <span className="text-text-muted">1ra entrada: </span>
+                        {vehicle.first_entry ? new Date(vehicle.first_entry).toLocaleDateString('es-AR') : '—'}
+                      </p>
+                      <p className="text-xs text-text-secondary">
+                        <span className="text-text-muted">Última salida: </span>
+                        {vehicle.last_exit ? new Date(vehicle.last_exit).toLocaleDateString('es-AR') : '—'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Last Detection - 🎯 Card con hover y borde animado */}
-          <div className="bg-surface-lighter/30 rounded-lg p-4 border border-surface-lighter transition-all duration-300 hover:border-primary/50 hover:bg-surface-lighter/40">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-text-muted">Última Detección</p>
-                <p className="font-medium text-text-primary">{log.datetime}</p>
-              </div>
-              <div>
-                <p className="text-xs text-text-muted">Cámara</p>
-                <p className="font-medium text-text-primary">{log.camera}</p>
-              </div>
-              <span
-                className={`px-3 py-1 text-sm rounded-full ${
-                  log.type === "entrada"
-                    ? "bg-status-success/20 text-status-success"
-                    : "bg-status-warning/20 text-status-warning"
-                }`}
-              >
-                {log.type}
-              </span>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
+// ---------- Filtros ----------
+const EVENT_OPTIONS = [
+  { value: '',      label: 'Todos' },
+  { value: 'entry', label: 'Entradas' },
+  { value: 'exit',  label: 'Salidas' },
+];
+
+// ---------- Página principal ----------
 export default function Logs() {
-  const [selectedLog, setSelectedLog] = useState(null);
-  const [hoveredId, setHoveredId] = useState(null);
+  const [selectedDet, setSelectedDet] = useState(null);
+  const [hoveredId,   setHoveredId]   = useState(null);
+  const [plateFilter, setPlateFilter] = useState('');
+  const [eventFilter, setEventFilter] = useState('');
+
+  const fetchLogs = useCallback(() =>
+    getDetections({
+      limit:  100,
+      plate:  plateFilter  || undefined,
+      event:  eventFilter  || undefined,
+    }),
+    [plateFilter, eventFilter]
+  );
+
+  const { data: detections, loading, error, refresh } = usePolling(fetchLogs, 5000, []);
 
   return (
-    // 🎯 Fade-in para toda la página
     <div className="space-y-6 animate-fadeIn">
       <div className="opacity-0 animate-slideInDown">
         <h2 className="text-3xl font-bold mb-2 text-text-primary">Registros</h2>
         <p className="text-text-secondary">Historial de patentes detectadas por el sistema.</p>
       </div>
 
-      {/* 🎯 Tabla con animación de entrada, borde hover y mayor opacidad */}
-      <div className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl border border-surface-lighter overflow-hidden hover:border-primary/50 transition-colors duration-300" style={{ animationDelay: '100ms' }}>
-        <table className="w-full">
-          <thead className="bg-surface-lighter">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Patente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Fecha / Hora</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Cámara</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Tipo</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Detalle</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-lighter">
-            {logsData.map((log) => (
-              // 🎯 Fila con hover suave + ligero translate
-              <tr key={log.id} className="hover:bg-surface-lighter/30 transition-all duration-200 hover:shadow-md">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {/* 🎯 Badge de patente con hover */}
-                  <span className="px-3 py-1 bg-surface-lighter rounded-lg font-mono font-bold text-primary-light transition-all duration-200 hover:bg-primary/20 hover:scale-105 inline-block">
-                    {log.plate}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary transition-colors duration-200">{log.datetime}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary transition-colors duration-200">{log.camera}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {/* 🎯 Badge de tipo con transición */}
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full transition-all duration-200 hover:scale-110 inline-block ${
-                      log.type === "entrada"
-                        ? "bg-status-success/20 text-status-success"
-                        : "bg-status-warning/20 text-status-warning"
-                    }`}
-                  >
-                    {log.type}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  {/* 🎯 Botón con ícono que cambia suavemente + microescalado */}
-                  <button
-                    onClick={() => setSelectedLog(log)}
-                    onMouseEnter={() => setHoveredId(log.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 text-text-muted hover:text-accent-bright hover:scale-110 active:scale-95"
-                    title="Ver detalle"
-                  >
-                    <div className="transition-transform duration-200">
-                      {hoveredId === log.id ? <EyeOpenIcon /> : <EyeClosedIcon />}
-                    </div>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Filtros */}
+      <div
+        className="opacity-0 animate-fadeInUp flex flex-wrap gap-3 items-center"
+        style={{ animationDelay: '50ms' }}
+      >
+        <input
+          type="text"
+          placeholder="Buscar patente..."
+          value={plateFilter}
+          onChange={e => setPlateFilter(e.target.value)}
+          className="px-4 py-2 bg-surface-light/85 border border-surface-lighter rounded-lg text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-primary/50 transition-colors duration-200 font-mono"
+        />
+        <div className="flex gap-2">
+          {EVENT_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setEventFilter(opt.value)}
+              className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
+                eventFilter === opt.value
+                  ? 'bg-primary/20 text-primary-light border border-primary/40'
+                  : 'bg-surface-light/85 text-text-secondary border border-surface-lighter hover:border-primary/30'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <span className="ml-auto text-xs text-text-muted">Actualiza cada 5s</span>
       </div>
 
-      {/* Modal */}
-      {selectedLog && (
-        <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />
+      {/* Tabla */}
+      <div
+        className="opacity-0 animate-fadeInUp bg-surface-light/85 backdrop-blur-sm rounded-xl border border-surface-lighter overflow-hidden hover:border-primary/50 transition-colors duration-300"
+        style={{ animationDelay: '100ms' }}
+      >
+        {error && (
+          <p className="text-sm text-status-error text-center py-8">
+            No se pudo conectar con LPR_node. Verificá que esté corriendo en el puerto 9000.
+          </p>
+        )}
+
+        {loading && !error && (
+          <div className="p-6 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-12 bg-surface-lighter/50 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && (
+          <table className="w-full">
+            <thead className="bg-surface-lighter">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Patente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Fecha / Hora</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Confianza</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">Tipo</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-text-muted uppercase tracking-wider">Detalle</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-lighter">
+              {detections?.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-text-muted text-sm">
+                    Sin resultados.
+                  </td>
+                </tr>
+              )}
+              {detections?.map((det) => (
+                <tr key={det.id} className="hover:bg-surface-lighter/30 transition-all duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-3 py-1 bg-surface-lighter rounded-lg font-mono font-bold text-primary-light hover:bg-primary/20 hover:scale-105 transition-all duration-200 inline-block">
+                      {det.plate}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    {formatDate(det.detection_timestamp)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    {(det.confidence * 100).toFixed(1)}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs rounded-full inline-block ${
+                      det.event === 'entry'
+                        ? 'bg-status-success/20 text-status-success'
+                        : 'bg-status-warning/20 text-status-warning'
+                    }`}>
+                      {det.event === 'entry' ? 'Entrada' : 'Salida'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <button
+                      onClick={() => setSelectedDet(det)}
+                      onMouseEnter={() => setHoveredId(det.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      className="p-2 hover:bg-surface-lighter rounded-lg transition-all duration-200 text-text-muted hover:text-accent-bright hover:scale-110 active:scale-95"
+                      title="Ver detalle"
+                    >
+                      {hoveredId === det.id ? <EyeOpenIcon /> : <EyeClosedIcon />}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {selectedDet && (
+        <DetailModal detection={selectedDet} onClose={() => setSelectedDet(null)} />
       )}
     </div>
   );
