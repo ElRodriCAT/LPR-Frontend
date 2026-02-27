@@ -7,9 +7,10 @@ const pageTitles = {
   "/logs": "Registros",
   "/stats": "Estadísticas",
   "/settings": "Configuración",
+  "/charts": "Charts",
 };
 
-export default function Topbar() {
+export default function Topbar({ scrolled = false }) {
   const location = useLocation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [user] = useState({ name: "Admin", role: "Operador" });
@@ -44,7 +45,11 @@ export default function Topbar() {
 
   return (
     // 🎯 Header con backdrop blur y animación de entrada - Mayor opacidad para legibilidad
-    <header className="h-16 bg-surface-light/95 backdrop-blur-sm border-b border-surface-lighter flex items-center justify-between px-6 shadow-lg animate-slideInDown">
+    <header className={`h-16 border-b border-surface-lighter flex items-center justify-between px-6 animate-slideInDown transition-all duration-300 ${
+      scrolled
+        ? 'bg-surface-dark/80 backdrop-blur-md shadow-xl'
+        : 'bg-surface-light/95 backdrop-blur-sm shadow-lg'
+    }`}>
       {/* Page Title */}
       <div className="flex items-center gap-3">
         {/* 🎯 Título con fade-in */}

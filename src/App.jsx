@@ -5,6 +5,7 @@ import Cameras from "./pages/Cameras";
 import Logs from "./pages/Logs";
 import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
+import AnimatedCharts from "./components/AnimatedCharts";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="logs" element={<Logs />} />
           <Route path="stats" element={<Stats />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="charts" element={<AnimatedCharts />} />
         </Route>
       </Routes>
     </BrowserRouter>
