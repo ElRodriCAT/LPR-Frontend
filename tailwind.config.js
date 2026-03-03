@@ -7,7 +7,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 🎨 Paleta Corporativa Azul Tech
         'primary': {
           DEFAULT: '#3A7BD5',
           light: '#5EA8FF',
