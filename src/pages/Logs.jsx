@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { getDetections, getVehicle } from "../api/services/lprService";
+import { useState, useCallback } from "react";
+import { getDetections } from "../api/services/lprService";
 import { usePolling } from "../hooks/usePolling";
 
 // ---------- Iconos ----------
@@ -40,17 +40,9 @@ function formatDuration(seconds) {
 
 // ---------- Modal ----------
 function DetailModal({ detection, onClose }) {
-  const [vehicle, setVehicle]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    getVehicle(detection.plate)
-      .then(v  => { setVehicle(v); setError(null); })
-      .catch(() => setError('No se pudo cargar el vehículo.'))
-      .finally(() => setLoading(false));
-  }, [detection.plate]);
+  const vehicle = null;
+  const loading = false;
+  const error   = null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn">
@@ -88,7 +80,7 @@ function DetailModal({ detection, onClose }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-surface-lighter/50 rounded-lg p-3">
                 <p className="text-xs text-text-muted">Fecha / Hora</p>
-                <p className="font-medium text-text-primary text-sm">{formatDate(detection.detection_timestamp)}</p>
+                <p className="font-medium text-text-primary text-sm">{formatDate(detection.timestamp)}</p>
               </div>
               <div className="bg-surface-lighter/50 rounded-lg p-3">
                 <p className="text-xs text-text-muted">Confianza</p>
@@ -276,7 +268,7 @@ export default function Logs() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                    {formatDate(det.detection_timestamp)}
+                    {formatDate(det.timestamp)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
                     {(det.confidence * 100).toFixed(1)}%

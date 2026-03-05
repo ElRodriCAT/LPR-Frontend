@@ -55,7 +55,7 @@ const noScalesOptions = {
 function groupByHour(detections) {
   const counts = Array(24).fill(0);
   detections.forEach(d => {
-    const h = new Date(d.detection_timestamp).getHours();
+    const h = new Date(d.timestamp).getHours();
     counts[h]++;
   });
   return counts;
@@ -74,7 +74,7 @@ function groupByDay(detections, days) {
   }
 
   detections.forEach(d => {
-    const key = d.detection_timestamp?.slice(0, 10);
+    const key = d.timestamp?.slice(0, 10);
     if (map[key]) {
       if (d.event === 'entry') map[key].entry++;
       else                     map[key].exit++;

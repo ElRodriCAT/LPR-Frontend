@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const DB_HOST = process.env.DB_HOST || '';
 const DB_PORT = process.env.DB_PORT || '3306';

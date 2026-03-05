@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { getDetections, getVehicles } from '../api/services/lprService';
+import { getDetections } from '../api/services/lprService';
 import { usePolling } from '../hooks/usePolling';
 import { useSortableList } from '../hooks/useSortableList';
 
@@ -42,14 +42,15 @@ function formatTimeAgo(dateStr) {
 
 export default function Dashboard() {
   const fetchDetections = useCallback(() => getDetections({ limit: 10 }), []);
-  const fetchVehicles   = useCallback(() => getVehicles({ status: 'inside' }), []);
 
   const { data: detections, loading: loadingD, error: errorD } = usePolling(fetchDetections, 5000, []);
-  const { data: vehicles,   loading: loadingV }                 = usePolling(fetchVehicles,   5000, []);
+
+  const loadingV = false;
+  const vehicles  = [];
 
   const today        = new Date().toISOString().slice(0, 10);
-  const todayDets    = (detections ?? []).filter(d => d.detection_timestamp?.slice(0, 10) === today);
-  const insideCount  = vehicles?.length ?? 0;
+  const todayDets    = (detections ?? []).filter(d => d.timestamp?.slice(0, 10) === today);
+  const insideCount  = 0; // sin ruta /vehicles aún
   const entriesCount = todayDets.filter(d => d.event === 'entry').length;
   const exitsCount   = todayDets.filter(d => d.event === 'exit').length;
   const recentCount  = detections?.length ?? 0;
@@ -159,7 +160,7 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <span className="text-sm text-text-muted">
-                  {formatTimeAgo(det.detection_timestamp)}
+                  {formatTimeAgo(det.timestamp)}
                 </span>
               </div>
             ))}
